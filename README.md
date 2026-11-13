@@ -1,5 +1,7 @@
 # SQL Server RowVersion Demo
 
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Chris-Wolfgang/Sql-RowVersionDemo/badge)](https://scorecard.dev/viewer/?uri=github.com/Chris-Wolfgang/Sql-RowVersionDemo)
+
 This repository contains examples of how to use the SQL Server RowVersion data type in productions systems
 
 ## Getting Started
