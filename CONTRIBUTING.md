@@ -19,7 +19,14 @@ Thank you for your interest in improving these SQL Server `rowversion` examples!
 2. Set up a SQL Server instance you can experiment on (a local or Developer edition instance, never a
    production server) with the `AdventureWorks2022` sample database. The README's
    [Getting Started](README.md#getting-started) section lists the prerequisites.
-3. Create a branch for your change, make it, and open a pull request against `main`.
+3. Enable the secret-scanning pre-commit hook (needs the [gitleaks](https://github.com/gitleaks/gitleaks#installing)
+   CLI on PATH; without it the hook warns and lets the commit through):
+
+   ```bash
+   git config core.hooksPath .githooks
+   ```
+
+4. Create a branch for your change, make it, and open a pull request against `main`.
 
 ---
 

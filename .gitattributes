@@ -1,0 +1,3 @@
+# Git hooks are bash scripts: keep LF endings on every platform, or bash
+# fails on the carriage returns when core.autocrlf checks them out as CRLF.
+.githooks/* text eol=lf
