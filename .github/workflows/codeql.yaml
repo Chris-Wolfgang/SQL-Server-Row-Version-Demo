@@ -1,0 +1,50 @@
+name: "CodeQL Security Analysis"
+
+# This repository holds T-SQL scripts and Markdown, which CodeQL does not analyse.
+# The one language it can scan here is 'actions': the workflow files themselves
+# (build-mode none, no build). That gives Scorecard's SAST check a real analyser.
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  schedule:
+    - cron: '0 0 * * 0'  # Weekly on Sunday at midnight UTC
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  # Only a superseded pull_request run is cancelled; a push to main is never cancelled.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read  # Default to read-only; the analyze job overrides where required
+
+jobs:
+  analyze:
+    name: "Security Scan (CodeQL)"
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+      with:
+        languages: actions
+        # security-extended adds the broader security query pack on top of the
+        # default queries (more rules, slightly longer scans).
+        queries: security-extended
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+      with:
+        category: "/language:actions"
