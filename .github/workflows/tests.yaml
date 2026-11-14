@@ -1,0 +1,54 @@
+name: "Example Tests"
+
+# Runs tests/run-example-01.sh against a throwaway SQL Server container on every
+# pull request and push to main. The SA password belongs to that container only.
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  # Only a superseded pull_request run is cancelled; a push to main is never cancelled.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  example-01:
+    name: "Test example 01 (SQL Server)"
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      mssql:
+        # Pinned to the digest the tag resolved to on 2026-11-10 (same pin as Etl-DbClient's
+        # benchmarks workflow). The image ships sqlcmd at /opt/mssql-tools18/bin/sqlcmd.
+        image: mcr.microsoft.com/mssql/server:2022-latest@sha256:11927f5edc5122658e90b3a80ee36e8aef779310bf771415c1d89271859c73fd
+        env:
+          ACCEPT_EULA: "Y"
+          MSSQL_SA_PASSWORD: "Rv-Test-SA-Pass-1!"
+        options: >-
+          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P Rv-Test-SA-Pass-1! -Q 'SELECT 1' || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # The runner has no sqlcmd, so the test runs inside the service container, where
+      # the checkout is copied in first.
+      - name: Run example 01 checks
+        env:
+          MSSQL_CONTAINER: ${{ job.services.mssql.id }}
+        run: |
+          docker cp "$GITHUB_WORKSPACE/." "$MSSQL_CONTAINER:/tmp/work"
+          docker exec -w /tmp/work \
+            -e SQLCMD=/opt/mssql-tools18/bin/sqlcmd \
+            -e SA_PASSWORD='Rv-Test-SA-Pass-1!' \
+            "$MSSQL_CONTAINER" bash tests/run-example-01.sh
