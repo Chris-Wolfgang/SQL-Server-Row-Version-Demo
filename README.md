@@ -27,10 +27,20 @@ in order against a SQL Server instance.
 
 ### Testing
 
-There is no automated test suite. An example is verified by running its scripts from setup to
-teardown against `AdventureWorks2022` and checking that each script completes without errors and that
-the rows inserted or updated by `3 - Modify Data.sql` appear in `Demo.Destination` after
-`2 - Update Table.sql` is run again.
+An example is verified by running its scripts from setup to teardown against `AdventureWorks2022` and
+checking that each script completes without errors and that the rows inserted or updated by
+`3 - Modify Data.sql` appear in `Demo.Destination` after `2 - Update Table.sql` is run again.
+
+`tests/run-example-01.sh` automates that check for example 1. It builds a small stand-in
+`AdventureWorks2022` (`tests/stub-adventureworks.sql`, just the `Person.Person` table and a few rows),
+then runs the scripts in order and compares the two tables after each step. To run it in a throwaway
+SQL Server container:
+
+```bash
+docker run -d --name rvtest -e ACCEPT_EULA=Y -e MSSQL_SA_PASSWORD='<a strong password>'     -v "$PWD:/work:ro" mcr.microsoft.com/mssql/server:2022-latest
+docker exec -w /work -e SQLCMD=/opt/mssql-tools18/bin/sqlcmd -e SA_PASSWORD='<the same password>'     rvtest bash tests/run-example-01.sh
+docker rm -f rvtest
+```
 
 ## Example 1
 

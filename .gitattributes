@@ -1,3 +1,6 @@
 # Git hooks are bash scripts: keep LF endings on every platform, or bash
 # fails on the carriage returns when core.autocrlf checks them out as CRLF.
 .githooks/* text eol=lf
+
+# Test scripts run under bash on Linux (CI and the SQL Server container).
+*.sh text eol=lf
