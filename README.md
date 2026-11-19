@@ -33,8 +33,9 @@ checking that each script completes without errors and that the rows inserted or
 
 `tests/run-example-01.sh` automates that check for example 1. It builds a small stand-in
 `AdventureWorks2022` (`tests/stub-adventureworks.sql`, just the `Person.Person` table and a few rows),
-then runs the scripts in order and compares the two tables after each step. To run it in a throwaway
-SQL Server container:
+then runs the scripts in order and compares the two tables after each step. It waits up to about 60
+seconds for SQL Server to accept logins, and it drops and recreates `AdventureWorks2022` on every run,
+so point it only at a throwaway instance. To run it in a throwaway SQL Server container:
 
 ```bash
 docker run -d --name rvtest -e ACCEPT_EULA=Y -e MSSQL_SA_PASSWORD='<a strong password>'     -v "$PWD:/work:ro" mcr.microsoft.com/mssql/server:2022-latest
