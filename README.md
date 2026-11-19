@@ -1,6 +1,6 @@
 # SQL Server RowVersion Demo
 
-[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Chris-Wolfgang/Sql-RowVersionDemo/badge)](https://scorecard.dev/viewer/?uri=github.com/Chris-Wolfgang/Sql-RowVersionDemo)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Chris-Wolfgang/SQL-Server-Row-Version-Demo/badge)](https://scorecard.dev/viewer/?uri=github.com/Chris-Wolfgang/SQL-Server-Row-Version-Demo)
 
 This repository contains examples of how to use the SQL Server RowVersion data type in production systems.
 
@@ -17,7 +17,7 @@ in order against a SQL Server instance.
 2. **Clone** the repository:
 
    ```bash
-   git clone https://github.com/Chris-Wolfgang/Sql-RowVersionDemo.git
+   git clone https://github.com/Chris-Wolfgang/SQL-Server-Row-Version-Demo.git
    ```
 
 3. **Open** an example folder (for example `example/example-01-using-sql-scipts-to-update-table/`).
@@ -44,6 +44,6 @@ docker rm -f rvtest
 
 ## Example 1
 
-Demonstrates how you can use `rowversion` in a table to track which records have been added or updated since the last time you checked and once identified you can then update the target table. More details can be found in the [Example 1 ReadMe](https://github.com/Chris-Wolfgang/Sql-RowVersionDemo/blob/main/example/example-01-using-sql-scipts-to-update-table/ReadMe.md)
+Demonstrates how you can use `rowversion` in a table to track which records have been added or updated since the last time you checked and once identified you can then update the target table. More details can be found in the [Example 1 ReadMe](example/example-01-using-sql-scipts-to-update-table/ReadMe.md)
 
 
