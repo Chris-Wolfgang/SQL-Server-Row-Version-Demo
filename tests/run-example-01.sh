@@ -102,6 +102,16 @@ if [[ "$versions_after" == "$versions_before" ]]; then
 fi
 echo "ok: Crystal rows have new versions after the second run of step 3"
 
+# The ReadMe also invites deleting source rows: step 2 must remove them from Destination.
+sql -Q "SET NOCOUNT ON; DELETE FROM AdventureWorks2022.Demo.Source WHERE LastName = 'Doe'"
+expect "Doe rows left in the destination before the delete is copied" 2 \
+    "$(scalar "SELECT COUNT(*) FROM AdventureWorks2022.Demo.Destination WHERE LastName = 'Doe'")"
+sql -i "$example/2 - Update Table.sql"
+expect "Doe rows left in the destination after the fourth update" 0 \
+    "$(scalar "SELECT COUNT(*) FROM AdventureWorks2022.Demo.Destination WHERE LastName = 'Doe'")"
+expect "destination rows after the fourth update" "$(scalar "$source_count")" "$(scalar "$dest_count")"
+expect "rows that differ after the fourth update" 0 "$(scalar "$diff_count")"
+
 sql -i "$example/5 - Teardown.sql"
 expect "Demo schema after teardown" 0 \
     "$(scalar "SELECT COUNT(*) FROM AdventureWorks2022.sys.schemas WHERE name = 'Demo'")"
