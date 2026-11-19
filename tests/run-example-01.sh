@@ -43,6 +43,10 @@ diff_count="SELECT COUNT(*) FROM (
      EXCEPT
      SELECT BusinessEntityID, Title, FirstName, LastName, rowguid FROM AdventureWorks2022.Demo.Source)
 ) AS d"
+# Source rows whose copy in Destination is missing or carries an older SourceVersion.
+stale_count="SELECT COUNT(*) FROM AdventureWorks2022.Demo.Source AS s
+    LEFT JOIN AdventureWorks2022.Demo.Destination AS d ON d.rowguid = s.rowguid
+    WHERE d.rowguid IS NULL OR d.SourceVersion <> CONVERT(binary(8), s.Version)"
 
 # SQL Server takes several seconds to accept logins after its container starts; wait up to
 # about 60 seconds rather than failing on the first script.
@@ -77,6 +81,26 @@ expect "destination rows after the second update" "$(scalar "$source_count")" "$
 expect "rows that differ after the second update" 0 "$(scalar "$diff_count")"
 expect "Crystal rows still without a title" 0 \
     "$(scalar "SELECT COUNT(*) FROM AdventureWorks2022.Demo.Destination WHERE FirstName = 'Crystal' AND Title IS NULL")"
+expect "destination rows whose SourceVersion lags the source" 0 "$(scalar "$stale_count")"
+
+# The ReadMe says step 3 can be run again: a second run must add another distinct person
+# and update the Crystal rows again (new rowversions), and step 2 must copy both changes.
+versions_before="$(scalar "SELECT STRING_AGG(CONVERT(varchar(20), SourceVersion, 1), ',') WITHIN GROUP (ORDER BY rowguid) FROM AdventureWorks2022.Demo.Destination WHERE FirstName = 'Crystal'")"
+sql -i "$example/3 - Modify Data.sql"
+expect "duplicate BusinessEntityIDs after modifying the source twice" 0 \
+    "$(scalar "SELECT COUNT(*) - COUNT(DISTINCT BusinessEntityID) FROM AdventureWorks2022.Demo.Source")"
+expect "rows that differ after modifying the source twice" 1 "$(scalar "$diff_count")"
+expect "destination rows whose SourceVersion lags the source after modifying it twice" 3 "$(scalar "$stale_count")"
+sql -i "$example/2 - Update Table.sql"
+expect "destination rows after the third update" "$(scalar "$source_count")" "$(scalar "$dest_count")"
+expect "rows that differ after the third update" 0 "$(scalar "$diff_count")"
+expect "destination rows whose SourceVersion lags the source after the third update" 0 "$(scalar "$stale_count")"
+versions_after="$(scalar "SELECT STRING_AGG(CONVERT(varchar(20), SourceVersion, 1), ',') WITHIN GROUP (ORDER BY rowguid) FROM AdventureWorks2022.Demo.Destination WHERE FirstName = 'Crystal'")"
+if [[ "$versions_after" == "$versions_before" ]]; then
+    echo "FAIL: the second run of step 3 did not give the Crystal rows new versions ($versions_after)" >&2
+    exit 1
+fi
+echo "ok: Crystal rows have new versions after the second run of step 3"
 
 sql -i "$example/5 - Teardown.sql"
 expect "Demo schema after teardown" 0 \
