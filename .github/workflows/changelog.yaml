@@ -38,10 +38,8 @@ jobs:
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           PR_LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
-          # The checkout uses persist-credentials:false, so a bare `git fetch origin` has no
-          # auth on a private repository. Pass the job token on this one command only; it is
-          # never written to git config.
-          TRUSTED_MAIN_URL: https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}
+        # This repository is public, so the base commit is fetched without credentials (no
+        # token in the URL). fetch-depth: 0 normally has it already; the fetch makes sure.
         run: |
-          git fetch "$env:TRUSTED_MAIN_URL" $env:BASE_SHA --depth=1
+          git fetch "https://github.com/$env:GITHUB_REPOSITORY" $env:BASE_SHA --depth=1
           pwsh ./scripts/changelog.ps1 check -BaseRef $env:BASE_SHA -Labels $env:PR_LABELS
