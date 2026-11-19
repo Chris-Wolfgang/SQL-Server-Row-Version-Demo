@@ -99,13 +99,17 @@ This script synchronizes the destination table with new or updated records from 
 
 3. Inserts any rows from `demo.Source` that are missing from the `demo.Destination` table.
 
+4. Deletes any rows from `demo.Destination` whose `rowguid` is no longer in `demo.Source`.
+
 By getting the current maximum version number in `demo.Destination`, you can identify which records have been added or updated in `demo.Source` since the last time you checked. By deleting these records, you are removing the old versions of the records from `demo.Destination` and allowing the next step to insert the new versions of the records.
 
 Finally, select all the records from `demo.Source` that are missing from `demo.Destination` and insert them into `demo.Destination`. This gives all the new and updated records from `demo.Source`.
 
+The last step handles deletes. `rowversion` cannot detect them: a deleted row is simply gone, with no version left to compare, so the script compares the keys of the two tables instead. That reads every key of both tables on each run, which is fine for this demo but grows with the table. In a production system you would usually record deletes instead, for example with a soft-delete flag (an update, so it gets a new `rowversion`), a trigger that writes deleted keys to a tombstone table, or SQL Server Change Tracking.
+
 ### 3 - Modify Data.sql
 
-This script simulates changes in the source table: it inserts a new person (Jane Doe, with the next free `BusinessEntityID`) and updates every person named Crystal (sets the title to `Ms.` and stamps `ModifiedDate`). Each run makes a new change, so you can run the script multiple times to see how the data changes in the source table.  You can also experiment with different types of changes, such as inserting new records, updating existing records, or deleting records.
+This script simulates changes in the source table: it inserts a new person (Jane Doe, with the next free `BusinessEntityID`) and updates every person named Crystal (sets the title to `Ms.` and stamps `ModifiedDate`). Each run makes a new change, so you can run the script multiple times to see how the data changes in the source table.  You can also experiment with different types of changes, such as inserting new records, updating existing records, or deleting records (for example `DELETE FROM Demo.Source WHERE LastName = 'Doe'`).
 
 Once you are done making changes to the source table, rerun the script `2 - Update Table.sql` to see how the changes are reflected in the target table.
 

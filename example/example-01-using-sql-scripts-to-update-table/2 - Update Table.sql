@@ -39,3 +39,11 @@ SELECT [BusinessEntityID]
 	  ,Version
 	FROM [AdventureWorks2022].[Demo].[Source]
 	WHERE rowguid NOT IN (SELECT [rowguid] FROM Demo.Destination)
+
+
+-- Remove records that were deleted from the source. A deleted row leaves no rowversion
+-- behind, so the version check above cannot find it: compare the keys of the two tables.
+Print 'Deleting records from destination that were deleted from source'
+
+DELETE FROM [AdventureWorks2022].[Demo].[Destination]
+	WHERE rowguid NOT IN (SELECT [rowguid] FROM [AdventureWorks2022].[Demo].[Source])
