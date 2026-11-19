@@ -58,15 +58,19 @@ This script sets up the database for the demo. It:
 
 2. Creates a table called `demo.Source` that is a copy of the `Person.Person` table in the `AdventureWorks` database and copies the `Person.Person` data to it.
 
-3. Adds a column called `Version` of type `rowversion` to the `demo.Source` table to track changes made in the source table.
+3. Adds a primary key on `rowguid` to `demo.Source`. `SELECT ... INTO` copies the columns and data but no keys or indexes, and `rowguid` is the column the update script uses to match a source row with its copy in the destination.
 
-4. Creates an index on the `Version` column to optimize queries that filter or sort by this column. This isn't needed on small tables, but for larger production tables it does improve read performance.
+4. Adds a column called `Version` of type `rowversion` to the `demo.Source` table to track changes made in the source table.
 
-5. Creates a table called `demo.Destination` that is a copy of the `Person.Person` table in the `AdventureWorks` database and leaves it empty.
+5. Creates an index on the `Version` column to optimize queries that filter or sort by this column. This isn't needed on small tables, but for larger production tables it does improve read performance.
 
-6. Adds a column called `SourceVersion` of type `BINARY(8)` to the `demo.Destination` table to store the version of the record from the source table.
+6. Creates a table called `demo.Destination` that is a copy of the `Person.Person` table in the `AdventureWorks` database and leaves it empty.
 
-7. Creates an index on the `SourceVersion` column to optimize queries that filter or sort by this column. This isn't needed on small tables, but for larger production tables it does improve read performance.
+7. Adds a primary key on `rowguid` to `demo.Destination`, so each source row can have only one copy there.
+
+8. Adds a column called `SourceVersion` of type `BINARY(8)` to the `demo.Destination` table to store the version of the record from the source table.
+
+9. Creates an index on the `SourceVersion` column to optimize queries that filter or sort by this column. This isn't needed on small tables, but for larger production tables it does improve read performance.
 
 By adding a `rowversion` column to the source table, you can easily track 
 which records have been added or updated since the last time you checked. 
@@ -91,7 +95,7 @@ This script synchronizes the destination table with new or updated records from 
 
 1. Gets the current maximum version number from the `demo.Destination` table and stores it in a variable called `@CurrentMaxVersion`.
 
-2. Finds any records in the `demo.Source` table that have a `rowversion` greater than `@CurrentMaxVersion` and deletes the corresponding records from `demo.Destination` using the table's primary key (`rowguid`).
+2. Finds any records in the `demo.Source` table that have a `rowversion` greater than `@CurrentMaxVersion` and deletes the corresponding records from `demo.Destination`, matching them on the tables' primary key (`rowguid`).
 
 3. Inserts any rows from `demo.Source` that are missing from the `demo.Destination` table.
 
