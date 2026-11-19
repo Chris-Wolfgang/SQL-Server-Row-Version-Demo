@@ -6,7 +6,13 @@
 #   SQLCMD       path to sqlcmd (e.g. /opt/mssql-tools18/bin/sqlcmd)
 #   SQL_SERVER   server to connect to (default localhost)
 #   SA_PASSWORD  sa password of that throwaway instance
+#
+# Point it only at a throwaway instance: it drops and recreates the AdventureWorks2022
+# database there (tests/stub-adventureworks.sql), so it can be run again on the same instance.
 set -euo pipefail
+
+: "${SQLCMD:?set SQLCMD to the path of sqlcmd (e.g. /opt/mssql-tools18/bin/sqlcmd)}"
+: "${SA_PASSWORD:?set SA_PASSWORD to the sa password of the throwaway SQL Server instance}"
 
 example="example/example-01-using-sql-scripts-to-update-table"
 server="${SQL_SERVER:-localhost}"
@@ -37,6 +43,19 @@ diff_count="SELECT COUNT(*) FROM (
      EXCEPT
      SELECT BusinessEntityID, Title, FirstName, LastName, rowguid FROM AdventureWorks2022.Demo.Source)
 ) AS d"
+
+# SQL Server takes several seconds to accept logins after its container starts; wait up to
+# about 60 seconds rather than failing on the first script.
+for attempt in $(seq 1 30); do
+    if sql -Q "SELECT 1" > /dev/null 2>&1; then
+        break
+    fi
+    if [[ "$attempt" -eq 30 ]]; then
+        echo "FAIL: SQL Server at '$server' did not accept a login within 60 seconds" >&2
+        exit 1
+    fi
+    sleep 2
+done
 
 sql -i tests/stub-adventureworks.sql
 

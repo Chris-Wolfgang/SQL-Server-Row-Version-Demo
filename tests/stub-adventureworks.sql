@@ -2,6 +2,15 @@
 -- It holds just what example 01 touches: the Person.Person table (same columns, same
 -- order, same alias types) with a handful of rows. Readers of the examples restore the
 -- real AdventureWorks2022 backup instead, as README.md describes.
+-- It drops any existing AdventureWorks2022 first, so the test can be rerun on the same
+-- instance: never run it against an instance whose AdventureWorks2022 you want to keep.
+IF DB_ID(N'AdventureWorks2022') IS NOT NULL
+BEGIN
+    ALTER DATABASE AdventureWorks2022 SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+    DROP DATABASE AdventureWorks2022;
+END;
+GO
+
 CREATE DATABASE AdventureWorks2022;
 GO
 
