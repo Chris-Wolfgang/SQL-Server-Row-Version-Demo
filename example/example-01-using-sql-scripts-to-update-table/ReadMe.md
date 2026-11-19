@@ -20,22 +20,30 @@ While these scripts are designed to be used on Microsoft SQL Server, you may be 
 
 ## How does the `rowversion` column work?
 
-- `rowversion` is a binary data type that gets incremented whenever there is a change to the table.
+- `rowversion` is an 8-byte binary value that SQL Server assigns automatically. Each database has a
+  single counter for it, shared by every table in that database that has a `rowversion` column.
 
-- When a record is inserted, it gets the next version number. When a row is updated, it gets the next version number.
+- Whenever a row in such a table is inserted or updated, it is stamped with the database's next counter
+  value. An `UPDATE` stamps the row even when it writes the same values back, so a new version means
+  "this row was written", not necessarily "this row's data changed".
 
-- Example:
-  - When the first record is inserted, it gets version 1.
+- Because the counter is database-wide, the values in one table are increasing but not consecutive and
+  do not start at 1: writes to other tables use up values in between.
 
-  - When the next record is inserted, it gets version 2.
+- Example (one table, with other tables in the database also being written to):
+  - The first record is inserted and gets version `0x...07D1`.
 
-  - When the first record is updated, it gets version 3.
+  - The next record is inserted and gets a higher version, say `0x...07D4` (other tables used `07D2`
+    and `07D3`).
 
-  - When a new record is inserted, it gets version 4.
+  - The first record is updated and gets a higher version again, say `0x...07D9`.
 
-  - When the second record is updated, it gets version 5.
-  - And so on.
+  - So "which rows have a version above the last one I copied?" finds exactly the rows inserted or
+    updated since then, whatever their order in the table. It cannot find deleted rows, which have no
+    version left to compare.
 
+- `@@DBTS` returns the last version used in the current database; `MIN_ACTIVE_ROWVERSION()` returns the
+  lowest version that may still belong to an open transaction.
 
 ## How to Use
 
