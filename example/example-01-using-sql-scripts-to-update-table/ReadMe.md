@@ -105,7 +105,7 @@ Finally, select all the records from `demo.Source` that are missing from `demo.D
 
 ### 3 - Modify Data.sql
 
-This script simulates changes in the source table. You can run the script multiple times to see how the data changes in the source table.  You can also experiment with different types of changes, such as inserting new records, updating existing records, or deleting records.
+This script simulates changes in the source table: it inserts a new person (Jane Doe, with the next free `BusinessEntityID`) and updates every person named Crystal (sets the title to `Ms.` and stamps `ModifiedDate`). Each run makes a new change, so you can run the script multiple times to see how the data changes in the source table.  You can also experiment with different types of changes, such as inserting new records, updating existing records, or deleting records.
 
 Once you are done making changes to the source table, rerun the script `2 - Update Table.sql` to see how the changes are reflected in the target table.
 
