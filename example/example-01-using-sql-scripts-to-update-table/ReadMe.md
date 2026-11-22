@@ -93,17 +93,21 @@ on the actual data changes.
 
 This script synchronizes the destination table with new or updated records from the source table by performing the following actions:
 
-1. Gets the current maximum version number from the `demo.Destination` table and stores it in a variable called `@CurrentMaxVersion`.
+1. Starts a transaction, so the whole update either completes or is rolled back (with `SET XACT_ABORT ON`, any error rolls it back).
 
-2. Finds any records in the `demo.Source` table that have a `rowversion` greater than `@CurrentMaxVersion` and deletes the corresponding records from `demo.Destination`, matching them on the tables' primary key (`rowguid`).
+2. Gets the current maximum version number from the `demo.Destination` table and stores it in a variable called `@CurrentMaxVersion`, and stores `MIN_ACTIVE_ROWVERSION()` in `@UpperBound`. Only source rows with a version below `@UpperBound` are copied in this run (see below).
 
-3. Inserts any rows from `demo.Source` that are missing from the `demo.Destination` table.
+3. Finds any records in the `demo.Source` table that have a `rowversion` greater than `@CurrentMaxVersion` (and below `@UpperBound`) and deletes the corresponding records from `demo.Destination`, matching them on the tables' primary key (`rowguid`).
 
-4. Deletes any rows from `demo.Destination` whose `rowguid` is no longer in `demo.Source`.
+4. Inserts any rows from `demo.Source` (below `@UpperBound`) that are missing from the `demo.Destination` table.
+
+5. Deletes any rows from `demo.Destination` whose `rowguid` is no longer in `demo.Source`, then commits the transaction.
 
 By getting the current maximum version number in `demo.Destination`, you can identify which records have been added or updated in `demo.Source` since the last time you checked. By deleting these records, you are removing the old versions of the records from `demo.Destination` and allowing the next step to insert the new versions of the records.
 
 Finally, select all the records from `demo.Source` that are missing from `demo.Destination` and insert them into `demo.Destination`. This gives all the new and updated records from `demo.Source`.
+
+Why `@UpperBound`? A `rowversion` is assigned when a row is written, not when its transaction commits. If transaction A updates a row (and gets, say, version 100) and is still open while transaction B updates another row (version 101) and commits, a run that copied B's row would move `@CurrentMaxVersion` to 101; when A commits, its row has version 100, below the mark, and would never be copied. `MIN_ACTIVE_ROWVERSION()` is the lowest version that may still belong to an open transaction, so stopping just below it leaves B's row for the next run, by which time A has committed and both rows are copied.
 
 The last step handles deletes. `rowversion` cannot detect them: a deleted row is simply gone, with no version left to compare, so the script compares the keys of the two tables instead. That reads every key of both tables on each run, which is fine for this demo but grows with the table. In a production system you would usually record deletes instead, for example with a soft-delete flag (an update, so it gets a new `rowversion`), a trigger that writes deleted keys to a tombstone table, or SQL Server Change Tracking.
 

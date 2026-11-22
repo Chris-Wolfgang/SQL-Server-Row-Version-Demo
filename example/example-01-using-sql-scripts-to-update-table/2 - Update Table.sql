@@ -1,8 +1,20 @@
 USE AdventureWorks2022
 
--- Get the newest version from the destination table
+-- Run the whole update as one transaction, so a failure part-way through rolls everything
+-- back instead of leaving Destination without the rows it had just deleted.
+SET XACT_ABORT ON;
+BEGIN TRANSACTION;
+
+-- Get the newest source version already copied to the destination (NULL when it is empty)
 DECLARE @CurrentMaxVersion BINARY(8)
 SELECT @CurrentMaxVersion = MAX(SourceVersion) FROM [AdventureWorks2022].[Demo].[Destination];
+
+-- Only copy changes below the lowest version that may still belong to an open transaction.
+-- A rowversion is assigned when a row is written, not when its transaction commits, so a
+-- transaction still in progress can hold a lower version than one that has already
+-- committed. Copying the committed row would move @CurrentMaxVersion past the open one, and
+-- its row would never be picked up. Rows at or above @UpperBound are left for the next run.
+DECLARE @UpperBound BINARY(8) = MIN_ACTIVE_ROWVERSION();
 
 
 
@@ -12,7 +24,8 @@ Print 'deleting records updated in source from destination';
 
 WITH UpdatedRecords AS
 (
-SELECT rowguid FROM  [AdventureWorks2022].[Demo].[Source] WHERE version > @CurrentMaxVersion
+SELECT rowguid FROM  [AdventureWorks2022].[Demo].[Source]
+	WHERE version > @CurrentMaxVersion AND version < @UpperBound
 )
 DELETE FROM Demo.Destination WHERE rowguid IN (SELECT rowguid FROM UpdatedRecords)
 
@@ -39,6 +52,7 @@ SELECT [BusinessEntityID]
 	  ,Version
 	FROM [AdventureWorks2022].[Demo].[Source]
 	WHERE rowguid NOT IN (SELECT [rowguid] FROM Demo.Destination)
+	  AND version < @UpperBound
 
 
 -- Remove records that were deleted from the source. A deleted row leaves no rowversion
@@ -47,3 +61,5 @@ Print 'Deleting records from destination that were deleted from source'
 
 DELETE FROM [AdventureWorks2022].[Demo].[Destination]
 	WHERE rowguid NOT IN (SELECT [rowguid] FROM [AdventureWorks2022].[Demo].[Source])
+
+COMMIT TRANSACTION;
