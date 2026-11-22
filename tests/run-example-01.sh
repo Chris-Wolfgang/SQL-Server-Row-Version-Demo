@@ -61,6 +61,8 @@ sql -i tests/stub-adventureworks.sql
 
 sql -i "$example/1 - Setup.sql"
 expect "destination rows after setup" 0 "$(scalar "$dest_count")"
+expect "primary keys on the Demo tables" 2 \
+    "$(scalar "SELECT COUNT(*) FROM AdventureWorks2022.sys.key_constraints k JOIN AdventureWorks2022.sys.schemas s ON s.schema_id = k.schema_id WHERE s.name = 'Demo' AND k.type = 'PK'")"
 
 sql -i "$example/2 - Update Table.sql"
 expect "destination rows after the first update" "$(scalar "$source_count")" "$(scalar "$dest_count")"
