@@ -8,7 +8,7 @@
 #   SA_PASSWORD  sa password of that throwaway instance
 set -euo pipefail
 
-example="example/example-01-using-sql-scipts-to-update-table"
+example="example/example-01-using-sql-scripts-to-update-table"
 server="${SQL_SERVER:-localhost}"
 
 sql() { "$SQLCMD" -C -b -S "$server" -U sa -P "$SA_PASSWORD" "$@"; }
