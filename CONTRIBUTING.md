@@ -1,4 +1,4 @@
-# Contributing to Sql-RowVersionDemo
+# Contributing to SQL-Server-Row-Version-Demo
 
 Thank you for your interest in improving these SQL Server `rowversion` examples! Contributions are welcome.
 
