@@ -20,7 +20,7 @@ in order against a SQL Server instance.
    git clone https://github.com/Chris-Wolfgang/Sql-RowVersionDemo.git
    ```
 
-3. **Open** an example folder (for example `example/example-01-using-sql-scipts-to-update-table/`).
+3. **Open** an example folder (for example `example/example-01-using-sql-scripts-to-update-table/`).
    In SSMS you can open the `.ssmssqlproj` file to get all of the scripts in Solution Explorer.
 4. **Run** the scripts in numeric order (`1 - Setup.sql`, `2 - Update Table.sql`, ...), reading the
    example's ReadMe as you go. The last script (`5 - Teardown.sql`) removes everything the example created.
@@ -44,6 +44,6 @@ docker rm -f rvtest
 
 ## Example 1
 
-Demonstrates how you can use `rowversion` in a table to track which records have been added or updated since the last time you checked and once identified you can then update the target table. More details can be found in the [Example 1 ReadMe](https://github.com/Chris-Wolfgang/Sql-RowVersionDemo/blob/main/example/example-01-using-sql-scipts-to-update-table/ReadMe.md)
+Demonstrates how you can use `rowversion` in a table to track which records have been added or updated since the last time you checked and once identified you can then update the target table. More details can be found in the [Example 1 ReadMe](https://github.com/Chris-Wolfgang/Sql-RowVersionDemo/blob/main/example/example-01-using-sql-scripts-to-update-table/ReadMe.md)
 
 
