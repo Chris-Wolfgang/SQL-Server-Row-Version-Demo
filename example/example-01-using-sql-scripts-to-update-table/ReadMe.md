@@ -83,7 +83,7 @@ This script synchronizes the destination table with new or updated records from 
 
 1. Gets the current maximum version number from the `demo.Destination` table and stores it in a variable called `@CurrentMaxVersion`.
 
-2. Finds any records in the `demo.Source` table that have a `rowversion` greater than `@CurrentMaxVersion` and deletes the corresponding records from `demo.Destination` using the table's primary key (`rowguid`).
+2. Finds any records in the `demo.Source` table that have a `rowversion` greater than `@CurrentMaxVersion` and deletes the corresponding records from `demo.Destination` using the `rowguid` column.
 
 3. Inserts any rows from `demo.Source` that are missing from the `demo.Destination` table.
 
