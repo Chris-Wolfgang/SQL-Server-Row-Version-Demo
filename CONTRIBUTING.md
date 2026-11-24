@@ -32,8 +32,12 @@ Thank you for your interest in improving these SQL Server `rowversion` examples!
 
 ## Testing Your Change
 
-There is no automated test suite. Before you open a pull request, run the affected example from
-start to finish against `AdventureWorks2022`:
+An automated test (`tests/run-example-01.sh`) runs example 1 from setup to teardown and asserts on the
+table contents. It runs on every pull request and push to `main` via `.github/workflows/tests.yaml`.
+You can also run it locally against a SQL Server container (see `README.md` lines 28-43).
+
+Before you open a pull request, run the affected example from start to finish against
+`AdventureWorks2022`:
 
 1. Run every script of the example in numeric order, including the teardown script.
 2. Check that each script completes without errors and that the results match what the example's
