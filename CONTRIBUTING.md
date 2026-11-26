@@ -1,4 +1,4 @@
-# Contributing to Sql-RowVersionDemo
+# Contributing to SQL-Server-Row-Version-Demo
 
 Thank you for your interest in improving these SQL Server `rowversion` examples! Contributions are welcome.
 
@@ -32,14 +32,23 @@ Thank you for your interest in improving these SQL Server `rowversion` examples!
 
 ## Testing Your Change
 
-There is no automated test suite. Before you open a pull request, run the affected example from
-start to finish against `AdventureWorks2022`:
+Example 1 has an automated check, `tests/run-example-01.sh`, that runs on every pull request (the
+`Test example 01 (SQL Server)` job in `.github/workflows/tests.yaml`). It builds a small stand-in
+`AdventureWorks2022` (`tests/stub-adventureworks.sql`), runs the example's scripts in order, and
+compares `Demo.Source` with `Demo.Destination` after each step. The README's
+[Testing](README.md#testing) section shows how to run it locally in a throwaway SQL Server container.
 
-1. Run every script of the example in numeric order, including the teardown script.
-2. Check that each script completes without errors and that the results match what the example's
-   ReadMe says they will be.
-3. Run the teardown script and confirm the database is back to its original state, so the example can
-   be run again from the start.
+Before you open a pull request:
+
+1. If you changed example 1, run `tests/run-example-01.sh` and make sure it passes. When the change
+   alters what the scripts do, update the checks in the test in the same pull request.
+2. If you added an example, add a matching `tests/run-example-NN.sh` that runs its scripts from setup
+   to teardown and checks the results the example's ReadMe promises. Wiring it into
+   `.github/workflows/tests.yaml` is a workflow change, so it goes in a pull request of its own.
+3. Also run the example by hand against the real `AdventureWorks2022` (the stub holds only a few
+   rows of `Person.Person`): every script, in numeric order, should complete without errors and give
+   the results the ReadMe describes, and the teardown script should leave the database as it was, so
+   the example can be run again from the start.
 
 ---
 

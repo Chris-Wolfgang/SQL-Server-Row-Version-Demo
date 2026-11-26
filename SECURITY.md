@@ -14,7 +14,7 @@ If you discover a security vulnerability (for example, a script that could damag
 `Demo` schema it creates, or a secret committed to the repository), please follow these steps:
 
 1. **Do not** create a public issue on this repository.
-2. Open the private report form: https://github.com/Chris-Wolfgang/Sql-RowVersionDemo/security/advisories/new
+2. Open the private report form: https://github.com/Chris-Wolfgang/SQL-Server-Row-Version-Demo/security/advisories/new
    (or, from the repository's **Security** tab, click **Report a vulnerability**).
    GitHub's guide to this process: https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing-information-about-vulnerabilities/privately-reporting-a-security-vulnerability
 3. Fill out the provided form with:
